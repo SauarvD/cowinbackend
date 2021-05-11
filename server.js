@@ -60,6 +60,7 @@ app.post("/findslots", (req, res) => {
   dataToArray = dataToArray.join("\n");
 
   console.log(dataToArray);
+  console.log('phone number: ', req.body.phonenumber)
 
   client.messages
     .create({
