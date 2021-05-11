@@ -11,7 +11,7 @@ const client = require("twilio")(accountSid, authToken);
  * app config
  */
 const app = express();
-const port = process.env.PORT || 9000;
+const PORT = process.env.PORT || 8000;
 
 /**
  * middleware
@@ -22,52 +22,66 @@ app.use(express.json());
 /**
  * function to check slot availability
  */
-isslotavailable = (data) => {
-    let slotsArray = [];
+isslotavailable = data => {
+  let slotsArray = [];
 
-    for(let i=0; i<data.length; i++) {
-        if(data[i].sessions) {
-            for(let j=0; j<data[i].sessions.length; j++) {
-                if(data[i].sessions[j].min_age_limit == 18 && data[i].sessions[j].available_capacity > 0) {
-                    let obj = {
-                        address: data[i].address,
-                        block_name: data[i].block_name,
-                        slots: data[i].sessions[j].slots
-                    }
-                    slotsArray.push(obj)
-                }
-            }
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].sessions) {
+      for (let j = 0; j < data[i].sessions.length; j++) {
+        if (
+          data[i].sessions[j].min_age_limit == 18 &&
+          data[i].sessions[j].available_capacity > 0
+        ) {
+          let obj = {
+            address: data[i].address,
+            block_name: data[i].block_name,
+            slots: data[i].sessions[j].slots
+          };
+          slotsArray.push(obj);
         }
+      }
     }
+  }
 
-    return slotsArray;
-}
+  return slotsArray;
+};
 
 /**
  * api routes
  */
-app.post('/findslots', (req, res) => {
-    let result = isslotavailable(req.body.data)
+app.post("/findslots", (req, res) => {
+  let result = isslotavailable(req.body.data);
 
-    if(result.length == 0) {
-        result = 'No slots available today'
-    }
-    let dataToArray = JSON.stringify(result);
-    dataToArray = result.split(',').map(item => item.trim());
-    dataToArray = dataToArray.join("\n");
+  if (result.length == 0) {
+    result = "No slots available today";
+  }
+  let dataToArray = JSON.stringify(result);
+  dataToArray = result.split(",").map(item => item.trim());
+  dataToArray = dataToArray.join("\n");
 
-    client.messages
-        .create({
-            body: dataToArray,
-            from: 'whatsapp:+14155238886',
-            to: `whatsapp:+91${req.body.phonenumber}`
-       }) 
-      .then(message => console.log(message.sid))
-      .done();
- 
-})
+  client.messages
+    .create({
+      body: dataToArray,
+      from: "whatsapp:+14155238886",
+      to: `whatsapp:+91${req.body.phonenumber}`
+    })
+    .then(message => console.log(message.sid))
+    .done();
+});
+
+app.get("/", (req, res) => {
+  res.send("Welcome to COWINBACKEND server !!!! ");
+});
 
 /**
  * listen to port
  */
-app.listen(port, () => console.log(`Listening on localhost: ${port}`));
+app.listen(PORT, () => {
+  console.log(`info: Our app is running on port ${PORT}`);
+});
+
+process.on("unhandledRejection", err => {
+  console.log(err.name, err.message);
+  console.log("UNHANDLED REJECTION! Shutting down...");
+  process.exit(1);
+});
