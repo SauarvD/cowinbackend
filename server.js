@@ -4,7 +4,7 @@
 const express = require("express");
 const cors = require("cors");
 const accountSid = "AC9bd28c37ffc54f1cc5fda32bbfcc6bfb";
-const authToken = "445011c25050f7754590ea1396ca32f9";
+const authToken = "1a201cd6d0a958853f614539da1a3d70";
 const client = require("twilio")(accountSid, authToken);
 
 /**
@@ -59,13 +59,22 @@ app.post("/findslots", (req, res) => {
   dataToArray = result.split(",").map(item => item.trim());
   dataToArray = dataToArray.join("\n");
 
+  console.log(dataToArray);
+
   client.messages
     .create({
       body: dataToArray,
       from: "whatsapp:+14155238886",
       to: `whatsapp:+91${req.body.phonenumber}`
     })
-    .then(message => console.log(message.sid))
+    .then(message => {
+        console.log(message.sid)
+        res.send('message sent successfully')
+    })
+    .catch(error => {
+        console.error(error)
+        res.error('something went wrong while sending message')
+    })
     .done();
 });
 
